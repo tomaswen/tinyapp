@@ -6,8 +6,14 @@ app.use(bodyParser.urlencoded({extended: true}));
 app.set("view engine", "ejs");
 
 function generateRandomString() {
-   return Math.random().toString(36).substr(4,6);
-}
+   let randomStr = '';
+   let charString = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'
+   for (let i = 0; i <= 5; i++){
+      let randomIndex = Math.floor(Math.random()*61);
+      randomStr += charString.charAt(randomIndex);
+   }
+   return randomStr;
+};
 
 const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
@@ -38,11 +44,22 @@ app.get("/urls/new", (req, res) => {
 app.get("/urls/:shortURL", (req, res) => {
    let templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL]}
    res.render("urls_show", templateVars)
-})
+});
+
 app.post("/urls", (req, res) => {
-   console.log(req.body);  // Log the POST request body to the console
-   res.send("Ok");         // Respond with 'Ok' (we will replace this)
- });
+   let newLongURL = req.body.longURL;
+   let newShortURL = generateRandomString();
+   urlDatabase[newShortURL] = newLongURL
+   console.log(urlDatabase)
+   res.redirect(`/urls/${newShortURL}`);        
+});
+
+app.get("/u/:shortURL", (req, res) => {
+   const longURL = urlDatabase[req.params.shortURL]
+   console.log(longURL)
+   res.redirect(longURL);
+});
+
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
