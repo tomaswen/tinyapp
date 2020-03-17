@@ -45,7 +45,7 @@ app.get("/urls", (req,res) => {
 });
 //SENDS HTML RESPONSE TO ADD NEW URL TO THE DATABASE
 app.get("/urls/new", (req, res) => {
-   let templateVars = { username: req.cookies["username"]};
+  let templateVars = { username: req.cookies["username"]};
   res.render("urls_new",templateVars);
 });
 //SENDS HTML RESPONSE TO SHOW THE SPECIFIC SITE AND ITS SHORTENED URL
@@ -79,13 +79,13 @@ app.post("/urls/:shortURL", (req, res) => {
 });
 //AFTER POST LOGIN
 app.post("/login", (req, res) => {
-   res.cookie("username", req.body.username);
-   res.redirect("/urls");
+  res.cookie("username", req.body.username);
+  res.redirect("/urls");
 });
 //AFTER LOGOUT
 app.post("/logout", (req, res) =>{
-   res.clearCookie("username")
-   res.redirect("/urls")
+  res.clearCookie("username");
+  res.redirect("/urls");
 });
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
