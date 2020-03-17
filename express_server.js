@@ -2,8 +2,10 @@ const express = require("express");
 const app = express();
 const PORT = 8080;
 const bodyParser = require("body-parser");
+const cookieParser = require('cookie-parser');
 app.use(bodyParser.urlencoded({extended: true}));
 app.set("view engine", "ejs");
+app.use(cookieParser());
 
 // GENERATES A RANDOM 6DIGIT STRING
 const generateRandomString = () => {
@@ -38,16 +40,17 @@ app.get("/hello", (req, res) => {
 });
 //SENDS A HTML RESPONSE OF THE URLS IN THE DATABASE
 app.get("/urls", (req,res) => {
-  let templateVars = { urls: urlDatabase};
+  let templateVars = { urls: urlDatabase , username: req.cookies["username"]};
   res.render("urls_index", templateVars);
 });
 //SENDS HTML RESPONSE TO ADD NEW URL TO THE DATABASE
 app.get("/urls/new", (req, res) => {
-  res.render("urls_new");
+   let templateVars = { username: req.cookies["username"]};
+  res.render("urls_new",templateVars);
 });
 //SENDS HTML RESPONSE TO SHOW THE SPECIFIC SITE AND ITS SHORTENED URL
 app.get("/urls/:shortURL", (req, res) => {
-  let templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL]};
+  let templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL], username: req.cookies["username"]};
   res.render("urls_show", templateVars);
 });
 // AFTER POSTING/ADDING URL IT WILL REDIRECT BACK TO THE URL/:ID
@@ -73,6 +76,16 @@ app.post("/urls/:shortURL", (req, res) => {
   let shortURL = req.params.shortURL;
   urlDatabase[shortURL] = req.body.longURL;
   res.redirect("/urls");
+});
+//AFTER POST LOGIN
+app.post("/login", (req, res) => {
+   res.cookie("username", req.body.username);
+   res.redirect("/urls");
+});
+//AFTER LOGOUT
+app.post("/logout", (req, res) =>{
+   res.clearCookie("username")
+   res.redirect("/urls")
 });
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
