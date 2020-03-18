@@ -13,9 +13,15 @@
       <div class="card-body">
       <h5 class="card-title">REGISTER</h5>
    <form method="POST" action="/register">
-      <label>EMAIL: </label> <input name="email" type="email" placeholder="example@email.com"></br>
-      <label>PASSWORD: </label> <input name="password" type="password"></br>
-      <button>Register</button>
+      <div class="form-group">
+         <label for="exampleInputEmail1">Email Address</label>
+         <input type="email" name="email">
+       </div>
+       <div class="form-group">
+         <label for="exampleInputPassword1">Password</label>
+         <input type="password" name="password">
+       </div>
+      <button class="btn btn-primary" type="submit">Register</button>
    </form>
    </div>
 </div>
