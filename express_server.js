@@ -123,9 +123,9 @@ app.post("/login", (req, res) => {
   const userPassword = req.body.password;
   const userID = fetchUserID(users, userEmail);
   if (!userID) {
-    res.send("not found");
+    res.send("not found");// <------------------------- IMPROVE
   } else if (!isPasswordCorrect(users,userID,userPassword)) {
-    res.send("Password incorrect");
+    res.send("Password incorrect");// <------------------------- IMPROVE
   } else {
     res.cookie("user_id", userID);
     res.redirect("/urls");
@@ -144,12 +144,12 @@ app.get("/register", (req, res) => {
 //POST /REGISTER USER INTO THE DATABASE
 app.post("/register", (req, res) => {
   if (req.body.email === "" || req.body.password === "") {
-    res.statusCode = 400;
-    res.redirect("/urls");
+    res.statusCode = 400; 
+    res.send("invalid email/password");// <------------------------- IMPROVE
   }
   if (checkIfEmailIsInUserDatabase(users,req.body.email)) {
     res.statusCode = 400;
-    res.redirect("/urls");
+    res.send("Email is already taken");// <------------------------- IMPROVE
   } else {
     let userID = generateRandomString();
     users[userID] = req.body;
