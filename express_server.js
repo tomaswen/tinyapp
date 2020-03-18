@@ -67,7 +67,7 @@ const isPasswordCorrect = (database, id, password) => {
   return false;
 };
 
-const getUserURL = (database, searchingUserID) => {
+const getUserURL = (database, searchingUserID) => { //<------ Equivalent to urlsForUser(id)
   let userURLs = {};
   for (let site in database) {
     if (database[site].userID === searchingUserID) {
@@ -80,11 +80,8 @@ const getUserURL = (database, searchingUserID) => {
 
 //HOMEPAGE
 app.get("/", (req, res) => {
-  if (req.cookies["user_id"]) {
-    res.redirect("/urls");
-  } else {
-    res.redirect("/login");
-  }
+  res.redirect("/urls");
+  
 });
 //SENDS A HTML RESPONSE OF THE URLS IN THE DATABASE
 app.get("/urls", (req,res) => {
@@ -93,7 +90,9 @@ app.get("/urls", (req,res) => {
     let templateVars = { urls: newUrlDatabase , users: users[req.cookies["user_id"]]};
     res.render("urls_index", templateVars);
   } else {
-    res.redirect("/login");
+    let templateVars = { urls: "" , users: ""};
+    res.render("urls_index", templateVars);
+  //   res.redirect("/login");
   }
 });
 //SENDS HTML RESPONSE TO ADD NEW URL TO THE DATABASE
@@ -102,7 +101,7 @@ app.get("/urls/new", (req, res) => {
     let templateVars = { users: users[req.cookies["user_id"]]};
     res.render("urls_new",templateVars);
   } else {
-    res.redirect("/login");
+    res.redirect("/");
   }
 });
 //SENDS HTML RESPONSE TO SHOW THE SPECIFIC SITE AND ITS SHORTENED URL
@@ -135,9 +134,13 @@ app.post("/urls/:shortURL/delete", (req, res) =>{
 });
 //AFTER POST/UPDATING THE LONG URL
 app.post("/urls/:shortURL", (req, res) => {
-  let shortURL = req.params.shortURL;
-  urlDatabase[shortURL].longURL = req.body.longURL;
-  res.redirect("/urls");
+  if (req.cookies["user_id"]) {
+    let shortURL = req.params.shortURL;
+    urlDatabase[shortURL].longURL = req.body.longURL;
+    res.redirect("/urls");
+  } else {
+    res.redirect("/");
+  }
 });
 //AFTER POST LOGIN
 app.post("/login", (req, res) => {
@@ -146,15 +149,15 @@ app.post("/login", (req, res) => {
   const userID = fetchUserID(users, userEmail);
   if (!userEmail || !userPassword) {
     res.cookie("message", "Invalid Email/Password");
-    res.redirect("/login")
+    res.redirect("/login");
   } else if (!userID) {
     res.statusCode = 403;
     res.cookie("message", "User Not Found");
-    res.redirect("/login")
+    res.redirect("/login");
   } else if (!isPasswordCorrect(users,userID,userPassword)) {
     res.statusCode = 403;
     res.cookie("message", "Password is Incorrect");
-    res.redirect("/login")
+    res.redirect("/login");
   } else {
     res.cookie("user_id", userID);
     res.redirect("/urls");
@@ -180,11 +183,11 @@ app.post("/register", (req, res) => {
   if (!req.body.email || !req.body.password) {
     res.statusCode = 400;
     res.cookie("message", "Invalid Email/Password");
-    res.redirect("/register")
+    res.redirect("/register");
   } else if (checkIfEmailIsInUserDatabase(users,req.body.email)) {
     res.statusCode = 400;
     res.cookie("message", "Email is already taken");
-    res.redirect("/register")
+    res.redirect("/register");
   } else {
     let userID = generateRandomString();
     users[userID] = req.body;
@@ -196,7 +199,7 @@ app.post("/register", (req, res) => {
 //LOGIN PAGE
 app.get("/login", (req, res) => {
   let templateVars = {users: users[req.cookies["user_id"]], message: req.cookies["message"]};
-  res.clearCookie("message")
+  res.clearCookie("message");
   res.render("login_form", templateVars);
 });
 
