@@ -10,8 +10,10 @@ app.use(cookieParser());
 //----------------------URL-DATABASE---------------------
 
 const urlDatabase = {
-  "b2xVn2": "http://www.lighthouselabs.ca",
-  "9sm5xK": "http://www.google.com"
+  b6UTxQ: { longURL: "https://www.tsn.ca", userID: "userRandomID" },
+  i3BoGr: { longURL: "https://www.google.ca", userID: "userRandomID2" },
+  b6UTx1: { longURL: "https://www.tsn1.ca", userID: "userRandomID" },
+  i3BoG2: { longURL: "https://www.google1.ca", userID: "userRandomID2" },
 };
 
 //----------------------USER-DATABASE---------------------
@@ -64,61 +66,77 @@ const isPasswordCorrect = (database, id, password) => {
   }
   return false;
 };
+
+const getUserURL = (database, searchingUserID) => {
+  let userURLs = {};
+  for (let site in database) {
+    if (database[site].userID === searchingUserID) {
+      userURLs[site] = database[site].longURL;
+    }
+  }
+  return userURLs;
+};
 //----------------------REQUESTS-------------------------
 
 //HOMEPAGE
 app.get("/", (req, res) => {
-  res.redirect("/urls");
+  if (req.cookies["user_id"]) {
+    res.redirect("/urls");
+  } else {
+    res.redirect("/login");
+  }
 });
-// //SEND A JSON OF URLS IN THE HARDCODED DATABASE
-// app.get("/urls.json", (req, res) => {
-//   res.json(urlDatabase);
-// });
-// //PRINTS HELLO WORLD
-// app.get("/hello", (req, res) => {
-//   res.send("<html><body>Hello <b>World</b></body></html>\n");
-// });
 //SENDS A HTML RESPONSE OF THE URLS IN THE DATABASE
 app.get("/urls", (req,res) => {
-  let templateVars = { urls: urlDatabase , users: users[req.cookies["user_id"]]};
-  res.render("urls_index", templateVars);
+  if (req.cookies["user_id"]) {
+    const newUrlDatabase = getUserURL(urlDatabase,req.cookies["user_id"]);
+    let templateVars = { urls: newUrlDatabase , users: users[req.cookies["user_id"]]};
+    res.render("urls_index", templateVars);
+  } else {
+    res.redirect("/login");
+  }
 });
 //SENDS HTML RESPONSE TO ADD NEW URL TO THE DATABASE
 app.get("/urls/new", (req, res) => {
-  if(req.cookies["user_id"]){
+  if (req.cookies["user_id"]) {
     let templateVars = { users: users[req.cookies["user_id"]]};
     res.render("urls_new",templateVars);
   } else {
-    res.redirect("/login")
+    res.redirect("/login");
   }
 });
 //SENDS HTML RESPONSE TO SHOW THE SPECIFIC SITE AND ITS SHORTENED URL
 app.get("/urls/:shortURL", (req, res) => {
-  let templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL], users: users[req.cookies["user_id"]]};
+  let templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL].longURL, users: users[req.cookies["user_id"]]};
   res.render("urls_show", templateVars);
 });
 // AFTER POSTING/ADDING URL IT WILL REDIRECT BACK TO THE URL/:ID
 app.post("/urls", (req, res) => {
-  let newLongURL = req.body.longURL;
-  let newShortURL = generateRandomString();
-  urlDatabase[newShortURL] = newLongURL;
+  const newLongURL = req.body.longURL;
+  const newShortURL = generateRandomString();
+  const newUserID = req.cookies["user_id"];
+  urlDatabase[newShortURL] = { longURL: newLongURL, userID: newUserID };
   res.redirect(`/urls/${newShortURL}`);
 });
 // WILL REDIRECT TO THE ACTUAL WEBSITE BY USING GET REQUEST /U/:SHORTURL
 app.get("/u/:shortURL", (req, res) => {
-  const longURL = urlDatabase[req.params.shortURL];
+  const longURL = urlDatabase[req.params.shortURL].longURL;
   res.redirect(longURL);
 });
 //AFTER POSTING/DELETE WILL DELETE KEY FROM THE DATABASE
 app.post("/urls/:shortURL/delete", (req, res) =>{
-  let shortURL = req.params.shortURL;
-  delete urlDatabase[shortURL];
-  res.redirect("/urls");
+  if (req.cookies["user_id"]) {
+    let shortURL = req.params.shortURL;
+    delete urlDatabase[shortURL];
+    res.redirect("/urls");
+  } else {
+    res.redirect("/");
+  }
 });
 //AFTER POST/UPDATING THE LONG URL
 app.post("/urls/:shortURL", (req, res) => {
   let shortURL = req.params.shortURL;
-  urlDatabase[shortURL] = req.body.longURL;
+  urlDatabase[shortURL].longURL = req.body.longURL;
   res.redirect("/urls");
 });
 //AFTER POST LOGIN
@@ -126,10 +144,17 @@ app.post("/login", (req, res) => {
   const userEmail = req.body.email;
   const userPassword = req.body.password;
   const userID = fetchUserID(users, userEmail);
-  if (!userID) {
-    res.send("not found");// <------------------------- IMPROVE
+  if (!userEmail || !userPassword) {
+    res.cookie("message", "Invalid Email/Password");
+    res.redirect("/login")
+  } else if (!userID) {
+    res.statusCode = 403;
+    res.cookie("message", "User Not Found");
+    res.redirect("/login")
   } else if (!isPasswordCorrect(users,userID,userPassword)) {
-    res.send("Password incorrect");// <------------------------- IMPROVE
+    res.statusCode = 403;
+    res.cookie("message", "Password is Incorrect");
+    res.redirect("/login")
   } else {
     res.cookie("user_id", userID);
     res.redirect("/urls");
@@ -142,18 +167,24 @@ app.post("/logout", (req, res) => {
 });
 //REGISTER PAGE
 app.get("/register", (req, res) => {
-  let templateVars = { users: users[req.cookies["user_id"]]};
-  res.render("registration_form", templateVars);
+  if (req.cookies["user_id"]) {
+    res.redirect("/urls");
+  } else {
+    let templateVars = {users: users[req.cookies["user_id"]], message: req.cookies["message"]};
+    res.clearCookie("message");
+    res.render("registration_form", templateVars);
+  }
 });
 //POST /REGISTER USER INTO THE DATABASE
 app.post("/register", (req, res) => {
-  if (req.body.email === "" || req.body.password === "") {
-    res.statusCode = 400; 
-    res.send("invalid email/password");// <------------------------- IMPROVE
-  }
-  if (checkIfEmailIsInUserDatabase(users,req.body.email)) {
+  if (!req.body.email || !req.body.password) {
     res.statusCode = 400;
-    res.send("Email is already taken");// <------------------------- IMPROVE
+    res.cookie("message", "Invalid Email/Password");
+    res.redirect("/register")
+  } else if (checkIfEmailIsInUserDatabase(users,req.body.email)) {
+    res.statusCode = 400;
+    res.cookie("message", "Email is already taken");
+    res.redirect("/register")
   } else {
     let userID = generateRandomString();
     users[userID] = req.body;
@@ -164,7 +195,8 @@ app.post("/register", (req, res) => {
 });
 //LOGIN PAGE
 app.get("/login", (req, res) => {
-  let templateVars = {users: users[req.cookies["user_id"]]};
+  let templateVars = {users: users[req.cookies["user_id"]], message: req.cookies["message"]};
+  res.clearCookie("message")
   res.render("login_form", templateVars);
 });
 

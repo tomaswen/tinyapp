@@ -12,7 +12,7 @@
       </div>
      <% if (users) { %>
       <div>
-        <form method="POST" action="/logout"> Logged In as: <%=users.email%> <button>Log Out</button></form>
+        <form method="POST" action="/logout"> Logged In as: <%=users.email%> <button class="btn btn-primary" type="submit" >Log Out</button></form>
       <% } else {%>
         <div class="navbar-nav">
           <a class="nav-item nav-link" href="/login">LOGIN</a>
