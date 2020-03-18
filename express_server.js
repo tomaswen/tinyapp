@@ -85,8 +85,12 @@ app.get("/urls", (req,res) => {
 });
 //SENDS HTML RESPONSE TO ADD NEW URL TO THE DATABASE
 app.get("/urls/new", (req, res) => {
-  let templateVars = { users: users[req.cookies["user_id"]]};
-  res.render("urls_new",templateVars);
+  if(req.cookies["user_id"]){
+    let templateVars = { users: users[req.cookies["user_id"]]};
+    res.render("urls_new",templateVars);
+  } else {
+    res.redirect("/login")
+  }
 });
 //SENDS HTML RESPONSE TO SHOW THE SPECIFIC SITE AND ITS SHORTENED URL
 app.get("/urls/:shortURL", (req, res) => {
