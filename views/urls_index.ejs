@@ -14,13 +14,21 @@
 <body>
 
   <%- include('partials/_header')%>
+  <% if (message) { %>
+    <div class="alert alert-warning alert-dismissible fade show" role="alert">
+       <strong>ERROR</strong> <%= message %> 
+       <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+         <span aria-hidden="true">&times;</span>
+       </button>
+    </div>
+  <% } %>
   <% if (!urls) { %>
     <div class="text-center" style="margin: 1em;" >
-      <img src="https://i.imgflip.com/3t4ucn.jpg" title="made at imgflip.com"/>
+      <a href="/login"><img src="https://i.imgflip.com/3t4ucn.jpg" title="made at imgflip.com"/></a>
     </div>
   <% } else { %>
   <main style="margin: 1em;">
-    <h3>My URLs</h3>
+    <h3>My URLs</h3> 
     <table class="table">
       <thead>
         <tr>
@@ -46,6 +54,7 @@
         <% } %>
       </tbody>
     </table>
+    <a href="/urls/new"> Create a New Short Link</a>
   </main>
   <% } %>
   <!-- Bootstrap JS -->
