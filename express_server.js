@@ -48,9 +48,9 @@ const users = {
 
 //HOMEPAGE
 app.get("/", (req, res) => {
-  if (users[req.session.userId]) {
+  if (users[req.session.userId]) { //<--- IF THE USER COOKIE FROM PREVIOUS SESSION EXIST REDIRECT
     res.redirect("/urls");
-  } else {
+  } else {     //<--- IF THE USER COOKIE FROM PREVIOUS SESSION DOES NOT EXIST, CLEAR THE COOKIE AND REDIRECT
     req.session.userId = null;
     res.redirect("/urls");
   }
@@ -60,10 +60,10 @@ app.get("/", (req, res) => {
 app.get("/urls", (req,res) => {
   if (users[req.session.userId]) {
     const newUrlDatabase = getUserURL(urlDatabase, req.session.userId);
-    let templateVars = { urls: newUrlDatabase , users: users[req.session.userId], message: req.session.message};
-    req.session.message = null;
+    let templateVars = { urls: newUrlDatabase , users: users[req.session.userId], message: req.session.message}; // MESSAGE IS THE ERROR MESSAGE PASSED ON AS A COOKIE LATER IN THE CODE
+    req.session.message = null; //ERASE THE COOKIE
     res.render("urls_index", templateVars);
-  } else if (req.session.message) {
+  } else if (req.session.message) { //IF THERE IS AN ERROR BUT NO USER IS LOGGED IN
     let templateVars = { urls: "" , users: "" , message: req.session.message};
     req.session.message = null;
     res.render("urls_index", templateVars);
@@ -88,7 +88,7 @@ app.get("/urls/:shortURL", (req, res) => {
     let templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL].longURL, users: users[req.session.userId]};
     res.render("urls_show", templateVars);
   } else if (!urlDatabase[req.params.shortURL]) {
-    req.session.message = "Short URL Does Not Exist";
+    req.session.message = "Short URL Does Not Exist"; // <--- FIRST EXAMPLE OF SETTING AN ERROR MESSAGE COOKIE
     res.redirect("/");
   } else if (urlDatabase[req.params.shortURL] && req.session.userId !== urlDatabase[req.params.shortURL].userID) {
     req.session.message = "Access Restricted";
@@ -117,7 +117,7 @@ app.get("/u/:shortURL", (req, res) => {
     res.redirect('/urls');
   }
 });
-//AFTER POSTING/DELETE WILL DELETE KEY FROM THE DATABASE
+//WILL DELETE THE CORRESPONDING OBJECT FROM THE DATABASE
 app.post("/urls/:shortURL/delete", (req, res) =>{
   if (users[req.session.userId]) {
     let shortURL = req.params.shortURL;
@@ -131,7 +131,7 @@ app.post("/urls/:shortURL/delete", (req, res) =>{
     res.redirect("/");
   }
 });
-//AFTER POST/UPDATING THE LONG URL
+//UPDATES THE LONG URL OF THE CORRESPONDING SHORT URL IN THE DATABASE
 app.post("/urls/:shortURL", (req, res) => {
   if (users[req.session.userId]) {
     let shortURL = req.params.shortURL;
@@ -150,15 +150,13 @@ app.post("/login", (req, res) => {
   const userEmail = req.body.email;
   const userPassword = req.body.password;
   const userID = fetchUserID(users, userEmail);
-  if (!userEmail || !userPassword) {
+  if (!userEmail || !userPassword) { // <--- IF THERE ARE NO EMAIL OR PASSWORD ENTERED
     req.session.message = "Invalid Email/Password";
     res.redirect("/login");
-  } else if (!userID) {
-    res.statusCode = 403;
+  } else if (!userID) { //<---- IF USERID IS UNDEFINED
     req.session.message = "User Not Found";
     res.redirect("/login");
   } else if (!isPasswordCorrect(users,userID,userPassword)) {
-    res.statusCode = 403;
     req.session.message = "Password is Incorrect";
     res.redirect("/login");
   } else {
@@ -166,7 +164,7 @@ app.post("/login", (req, res) => {
     res.redirect("/");
   }
 });
-//AFTER LOGOUT
+//LOGS OUT THE USER AND DELETES THE COOKIES
 app.post("/logout", (req, res) => {
   req.session.userId = null;
   req.session.message = null;
@@ -182,14 +180,12 @@ app.get("/register", (req, res) => {
     res.render("registration_form", templateVars);
   }
 });
-//POST /REGISTER USER INTO THE DATABASE
+//REGISTERS THE USER INTO THE DATABASE
 app.post("/register", (req, res) => {
   if (!req.body.email || !req.body.password) {
-    res.statusCode = 400;
     req.session.message = "Invalid Email/Password";
     res.redirect("/register");
   } else if (checkIfEmailIsInUserDatabase(users,req.body.email)) {
-    res.statusCode = 400;
     req.session.message = "Email Is Already Taken";
     res.redirect("/register");
   } else {

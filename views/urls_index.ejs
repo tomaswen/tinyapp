@@ -14,7 +14,7 @@
 <body>
 
   <%- include('partials/_header')%>
-  <% if (message) { %>
+  <% if (message) { %>    <!-- SHOW THE ERROR MESSAGE IN AN ALERT STYLE-->
     <div class="alert alert-warning alert-dismissible fade show" role="alert">
        <strong>ERROR</strong> <%= message %> 
        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
@@ -22,7 +22,7 @@
        </button>
     </div>
   <% } %>
-  <% if (!urls) { %>
+  <% if (!urls) { %> <!-- SHOW A PICTURE IF THERE IS NO URLS PASSED ON-->
     <div class="text-center" style="margin: 1em;" >
       <a href="/login"><img src="https://i.imgflip.com/3t4ucn.jpg" title="made at imgflip.com"/></a>
     </div>

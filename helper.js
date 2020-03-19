@@ -35,7 +35,7 @@ const isPasswordCorrect = (database, id, password) => {
   return false;
 };
 // RETURNS AN OBJECT WITH SHORT URL AND LONG URL THAT MATCHES THE ID
-const getUserURL = (database, searchingUserID) => { //<------ Equivalent to urlsForUser(id)
+const getUserURL = (database, searchingUserID) => {
   let userURLs = {};
   for (let site in database) {
     if (database[site].userID === searchingUserID) {
