@@ -41,7 +41,7 @@
       <tbody>
         <% for(let url in urls) { %>
           <tr>
-            <td><%= url %></td>
+            <td> <a href="/urls/<%=url%>""> <%= url %> </a></td>
             <td><%= urls[url] %></td>
             <td>
               <a href="/urls/<%=url%>"><button class="btn btn-primary" type="submit">EDIT</button></a>
