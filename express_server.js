@@ -182,7 +182,7 @@ app.get("/register", (req, res) => {
   }
 });
 //REGISTERS THE USER INTO THE DATABASE
-app.post("/register", (req, res) => {
+app.put("/register", (req, res) => {
   if (!req.body.email || !req.body.password) {
     req.session.message = "Invalid Email/Password";
     res.redirect("/register");
