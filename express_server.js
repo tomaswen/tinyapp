@@ -1,5 +1,6 @@
 const express = require("express");
 const bodyParser = require("body-parser");
+const methodOverride = require('method-override')
 const bcrypt = require('bcrypt');
 const cookieSession = require('cookie-session');
 const {
@@ -19,7 +20,7 @@ app.use(cookieSession({
   name: 'session',
   keys: ['key1', 'key2']
 }));
-
+app.use(methodOverride('_method'));
 //----------------------URL-DATABASE---------------------
 
 const urlDatabase = {
@@ -96,7 +97,7 @@ app.get("/urls/:shortURL", (req, res) => {
   }
 });
 // AFTER POSTING/ADDING URL IT WILL REDIRECT BACK TO THE URL/:ID
-app.post("/urls", (req, res) => {
+app.put("/urls", (req, res) => {
   if (users[req.session.userId]) {
     const newLongURL = req.body.longURL;
     const newShortURL = generateRandomString();
@@ -118,7 +119,7 @@ app.get("/u/:shortURL", (req, res) => {
   }
 });
 //WILL DELETE THE CORRESPONDING OBJECT FROM THE DATABASE
-app.post("/urls/:shortURL/delete", (req, res) =>{
+app.delete("/urls/:shortURL", (req, res) =>{
   if (users[req.session.userId]) {
     let shortURL = req.params.shortURL;
     if (urlDatabase[shortURL].userID !== req.session.userId) {
